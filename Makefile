@@ -1,5 +1,10 @@
+TAG = latest
+APP = $(shell basename $(CURDIR))
 build:
-	docker build -t usersservice .
+	docker build -t registry.gitlab.exphost.pl/exphost-software/$(APP):$(TAG) .
+
+push:
+	docker push registry.gitlab.exphost.pl/exphost-software/$(APP):$(TAG)
 
 run:
-	docker run -e FLASK_ENV=development -p 5000:5000 --rm -it usersservice
+	docker run  --rm -e FLASK_ENV=development -p 5000:5000 -it registry.gitlab.exphost.pl/exphost-software/$(APP):$(TAG)

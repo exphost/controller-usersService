@@ -28,7 +28,7 @@ class User(Resource):
         app.logger.info("Creating user: {user}".format(user=request.json.get('login', "__not_present")))
         dao.create_user(**request.json)
 
-dao = DAO(base="dc=dev,dc=exphost,dc=fabrykowski,dc=pl", uri=os.environ['LDAP_URI'], dn=os.environ['LDAP_DN'], password=os.environ['LDAP_PASSWORD'])
+dao = DAO(base=os.environ['LDAP_BASE'], uri=os.environ['LDAP_URI'], dn=os.environ['LDAP_DN'], password=os.environ['LDAP_PASSWORD'])
 
 if __name__ == "__main__":
     app.run()

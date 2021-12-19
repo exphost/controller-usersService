@@ -9,7 +9,7 @@ class DAO:
     def create_user(self, login, gn, sn, mail, password, org="users"):
         dn="cn={login},ou={org},{base}".format(login=login, base=self.base, org=org)
         entry = [
-            ('objectClass', [b"inetOrgPerson"]),
+            ('objectClass', [b"inetOrgPerson", b"postfixUser"]),
             ('cn', login.encode()),
             ('gn', gn.encode()),
             ('sn', sn.encode()),
