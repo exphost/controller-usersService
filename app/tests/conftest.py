@@ -1,13 +1,18 @@
 import os
-import tempfile
 
 import pytest
 from usersservice import create_app
+import usersservice
+from tests.mock_dao import MockDAO
+
 
 @pytest.fixture
-def app():
+def app(mocker):
+    mocker.patch.object(usersservice, "DAO", MockDAO)
+    os.environ['LDAP_BASE'] = 'dc=example,dc=com'
     app = create_app()
     yield app
+
 
 @pytest.fixture
 def client(app):
