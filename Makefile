@@ -8,3 +8,5 @@ push:
 
 run:
 	docker run  --rm -e FLASK_ENV=development -p 5000:5000 -it registry.gitlab.exphost.pl/exphost-software/$(APP):$(TAG)
+test:
+	docker run  --rm -e FLASK_ENV=development -p 5000:5000 -it registry.gitlab.exphost.pl/exphost-software/$(APP):$(TAG) pytest
