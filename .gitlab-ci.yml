@@ -1,0 +1,72 @@
+stages:
+  - prepare
+  - tests
+  - build
+  - push
+  - deploy
+
+
+tests:
+  stage: tests
+  image: python:3.9
+  script:
+    - apt-get update && apt-get install libldap2-dev libsasl2-dev && apt-get clean
+    - pip install -r requirements.txt
+    - flake8
+    - pytest --cov --cov-report term --cov-report xml --junitxml=report.xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+      junit: report.xml
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  cache:
+    paths:
+      - .cache/pip
+.registry:
+  before_script:
+    - echo -n $CI_REGISTRY_PASSWORD | podman login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+
+build:
+  stage: build
+  image: quay.io/podman/stable
+  extends: .registry
+  script:
+    - podman pull $CI_REGISTRY_IMAGE:latest || true
+    - >
+      podman build 
+      --pull
+      --build-arg http_proxy=$http_proxy
+      --build-arg https_proxy=$https_proxy
+      --build-arg no_proxy=$no_proxy
+      --cache-from $CI_REGISTRY_IMAGE:latest
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      .
+
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+
+push latest:
+  variables:
+    GIT_STRATEGY: none
+  image: quay.io/podman/stable
+  stage: push
+  extends: .registry
+  only:
+    - master
+  script:
+    - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - podman push $CI_REGISTRY_IMAGE:latest
+
+push tag:
+  variables:
+    GIT_STRATEGY: none
+  image: quay.io/podman/stable
+  stage: push
+  extends: .registry
+  only:
+    - tags
+  script:
+    - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
