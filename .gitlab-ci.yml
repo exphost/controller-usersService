@@ -40,10 +40,10 @@ build:
       --build-arg https_proxy=$https_proxy
       --build-arg no_proxy=$no_proxy
       --cache-from $CI_REGISTRY_IMAGE:latest
-      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      --tag $CI_REGISTRY_IMAGE:dev
       .
 
-    - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - podman push $CI_REGISTRY_IMAGE:dev
 
 push latest:
   variables:
@@ -54,8 +54,8 @@ push latest:
   only:
     - master
   script:
-    - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - podman pull $CI_REGISTRY_IMAGE:dev
+    - podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:latest
     - podman push $CI_REGISTRY_IMAGE:latest
 
 push tag:
@@ -67,6 +67,6 @@ push tag:
   only:
     - tags
   script:
-    - podman pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - podman tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+    - podman pull $CI_REGISTRY_IMAGE:dev
+    - podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
