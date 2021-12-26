@@ -1,9 +1,9 @@
 def test_create_user(app, client):
-    response = client.post('/users/', json={'login': 'user1',
-                                            'gn': 'Robert',
-                                            'sn': 'Baran',
-                                            'mail': 'rbaran@example.com',
-                                            'password': 'baranek'})
+    response = client.post('/users/users/', json={'login': 'user1',
+                                                  'gn': 'Robert',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'baranek'})
 
     assert response.status_code == 200
     assert len(app.DAO.db) == 1
@@ -15,27 +15,27 @@ def test_create_user(app, client):
 
 
 def test_create_user_wrong_input(client):
-    response = client.post('/users/')
+    response = client.post('/users/users/')
     assert response.status_code == 400
 
 
 def test_duplicate_user(client):
-    response = client.post('/users/', json={'login': 'user1',
-                                            'gn': 'Robert',
-                                            'sn': 'Baran',
-                                            'mail': 'rbaran@example.com',
-                                            'password': 'baranek'})
+    response = client.post('/users/users/', json={'login': 'user1',
+                                                  'gn': 'Robert',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'baranek'})
 
     assert response.status_code == 200
-    response = client.post('/users/', json={'login': 'user1',
-                                            'gn': 'Robert',
-                                            'sn': 'Baran',
-                                            'mail': 'rbaran@example.com',
-                                            'password': 'baranek'})
+    response = client.post('/users/users/', json={'login': 'user1',
+                                                  'gn': 'Robert',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'baranek'})
 
     assert response.status_code == 409
 
 
 def test_create_user_get_405(client):
-    response = client.get('/users/')
+    response = client.get('/users/users/')
     assert response.status_code == 405

@@ -2,7 +2,7 @@ from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
 
-bp = Blueprint('users', __name__, url_prefix='/')
+bp = Blueprint('users', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
 
 user_model = api.model(

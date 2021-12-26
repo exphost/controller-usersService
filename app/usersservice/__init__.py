@@ -12,6 +12,7 @@ def create_app(test_config=None):
         LDAP_DN=os.environ.get("LDAP_DN", ""),
         LDAP_PASSWORD=os.environ.get("LDAP_PASSWORD", ""),
     )
+    app.config['APPLICATION_ROOT'] = "/users"
     app.logger.info("LDAP configuration:")
     app.logger.info(" LDAP_URI="+app.config['LDAP_URI'])
     app.logger.info(" LDAP_BASE="+app.config['LDAP_BASE'])
