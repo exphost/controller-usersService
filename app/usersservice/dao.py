@@ -17,14 +17,14 @@ class DAO:
             base=self.base,
             org=org
         )
-        pass_hash = passlib.hash.sha512_crypt.hash(password).encode()
+        pass_hash = passlib.hash.sha512_crypt.hash(password)
         entry = [
             ('objectClass', [b"inetOrgPerson"]),
             ('cn', login.encode()),
             ('gn', gn.encode()),
             ('sn', sn.encode()),
             ('mail', mail.encode()),
-            ('userPassword', "{crypt}%s" % pass_hash),
+            ('userPassword', ("{crypt}%s" % pass_hash).encode()),
         ]
         print(dn, entry)
         print(self.ldap.add_s(dn, entry))
