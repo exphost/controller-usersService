@@ -5,7 +5,13 @@ def test_create_user(app, client):
                                                   'mail': 'rbaran@example.com',
                                                   'password': 'baranek'})
 
-    assert response.status_code == 200
+    assert response.status_code == 201
+    assert response.json == {
+                            'login': 'user1',
+                            'gn': 'Robert',
+                            'sn': 'Baran',
+                            'mail': 'rbaran@example.com',
+                            'password': 'baranek'}
     assert len(app.DAO.db) == 1
     u = app.DAO.db['cn=user1,ou=users,dc=example,dc=com']
     username = list(filter(lambda x: x[0] == "cn", u))[0][1]
@@ -26,7 +32,7 @@ def test_duplicate_user(client):
                                                   'mail': 'rbaran@example.com',
                                                   'password': 'baranek'})
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     response = client.post('/users/users/', json={'login': 'user1',
                                                   'gn': 'Robert',
                                                   'sn': 'Baran',

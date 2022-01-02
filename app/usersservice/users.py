@@ -46,5 +46,6 @@ class User(Resource):
         ))
         try:
             current_app.DAO.create_user(**request.json)
+            return request.json, 201
         except ldap.ALREADY_EXISTS:
             return "User already exists", 409
