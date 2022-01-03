@@ -3,7 +3,7 @@ stages:
   - tests
   - build
   - push
-  - deploy
+  - deploy_to_dev
 
 
 tests:
@@ -70,3 +70,12 @@ push tag:
     - podman pull $CI_REGISTRY_IMAGE:dev
     - podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
+
+deploy_to_dev:
+  image: bitnami/kubectl
+  stage: deploy_to_dev 
+  script:
+    - kubectl -n tenant-exphost-controller rollout restart deployment tenant-exphost-controller-exphost-controller-usersservice
+    - kubectl -n tenant-exphost-controller rollout status deployment tenant-exphost-controller-exphost-controller-usersservice
+  environment:
+    name: dev
