@@ -45,3 +45,20 @@ def test_duplicate_user(client):
 def test_create_user_get_405(client):
     response = client.get('/users/users/')
     assert response.status_code == 405
+
+
+def test_duplicate_user_email(client):
+    response = client.post('/users/users/', json={'login': 'user1',
+                                                  'gn': 'Robert',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'baranek'})
+
+    assert response.status_code == 201
+    response = client.post('/users/users/', json={'login': 'user2',
+                                                  'gn': 'Renata',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'barankowa'})
+
+    assert response.status_code == 409
