@@ -7,5 +7,6 @@ run pip install -r /requirements.txt
 WORKDIR /app
 #cmd python main.py
 #cmd flask run --host=0.0.0.0
-CMD waitress-serve --port 5000 --call 'usersservice:create_app'
+#CMD waitress-serve --port 5000 --call 'usersservice:create_app'
+CMD gunicorn --bind 0.0.0.0:5000 wsgi:app --access-logfile -
 copy app /app
