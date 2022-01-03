@@ -15,6 +15,15 @@ def app(mocker):
 
 
 @pytest.fixture
+def app_debug(mocker):
+    mocker.patch.object(usersservice, "DAO", MockDAO)
+    os.environ['LDAP_BASE'] = 'dc=example,dc=com'
+    os.environ['LOG_LEVEL'] = 'DEBUG'
+    app = create_app()
+    yield app
+
+
+@pytest.fixture
 def client(app):
     return app.test_client()
 
