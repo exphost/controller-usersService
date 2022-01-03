@@ -15,7 +15,6 @@ def create_app(test_config=None):
     )
     app.config['APPLICATION_ROOT'] = "/users"
     app.logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))
-    print(app.logger.level)
     app.logger.info("LDAP configuration:")
     app.logger.info(" LDAP_URI="+app.config['LDAP_URI'])
     app.logger.info(" LDAP_BASE="+app.config['LDAP_BASE'])
