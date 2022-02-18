@@ -10,7 +10,7 @@ tests:
   stage: tests
   image: python:3.9
   script:
-    - apt-get update && apt-get install libldap2-dev libsasl2-dev && apt-get clean
+    - apt-get update && apt-get -y install libldap2-dev libsasl2-dev && apt-get clean
     - pip install -r requirements.txt
     - flake8
     - pytest --cov --cov-report term --cov-report xml --junitxml=report.xml

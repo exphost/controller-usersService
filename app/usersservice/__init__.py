@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from .dao import DAO
 from . import users
+from . import orgs
 from flask_cors import CORS
 
 
@@ -31,6 +32,7 @@ def create_app(test_config=None):
         return "Hello, World!"
 
     app.register_blueprint(users.bp)
+    app.register_blueprint(orgs.bp)
 
     CORS(app)
     return app

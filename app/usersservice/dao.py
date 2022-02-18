@@ -38,3 +38,24 @@ class DAO:
         ]
         print(dn, entry)
         print(self.ldap.add_s(dn, entry))
+
+    def create_group(self, name, owner, members, org="groups"):
+        dn = "cn={name},ou={org},{base}".format(
+                name=name,
+                base=self.base, org=org
+            )
+        owner_dn = "cn={name},ou=users,{base}".format(
+                name=owner,
+                base=self.base,
+            )
+        entry = [
+            ('objectClass', [b"groupOfNames"]),
+            ('cn', name.encode()),
+            ('owner', owner_dn.encode()),
+            ('member', ["cn={name},ou=users,{base}".format(
+                name=member,
+                base=self.base
+            ).encode() for member in members])
+        ]
+        print(dn, entry)
+        print(self.ldap.add_s(dn, entry))
