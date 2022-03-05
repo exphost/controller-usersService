@@ -1,6 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
+from .helpers import auth_required
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
@@ -49,3 +50,12 @@ class User(Resource):
             return request.json, 201
         except ldap.ALREADY_EXISTS:
             return "User already exists", 409
+
+
+@api.route("/userinfo", endpoint="userinfo")
+class UserInfo(Resource):
+    @auth_required
+    def get(self):
+        username = request.headers.get('X-User')
+        api.logger.debug(f"Getting userinfo: {username}")
+        return {'username': username}

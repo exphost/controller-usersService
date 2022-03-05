@@ -62,3 +62,15 @@ def test_duplicate_user_email(client):
                                                   'password': 'barankowa'})
 
     assert response.status_code == 409
+
+
+def test_userinfo_noauth(client):
+    response = client.get('/users/userinfo')
+    assert response.status_code == 401
+
+
+def test_userinfo(client):
+    response = client.get('/users/userinfo',
+                          headers={'X-User': 'test-user'})
+    assert response.status_code == 200
+    assert response.json == {'username': 'test-user'}
