@@ -47,6 +47,12 @@ class User(Resource):
         ))
         try:
             current_app.DAO.create_user(**request.json)
+            group_params = {
+                'name': request.json['login'],
+                'owner': request.json['login'],
+                'members': [request.json['login']],
+            }
+            current_app.DAO.create_group(**group_params)
             return request.json, 201
         except ldap.ALREADY_EXISTS:
             return "User already exists", 409

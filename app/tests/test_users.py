@@ -19,6 +19,15 @@ def test_create_user(app, client):
     email = list(filter(lambda x: x[0] == "mail", u))[0][1]
     assert email == b"rbaran@example.com"
 
+    # check the default group creation
+    assert 'cn=user1,ou=groups,dc=example,dc=com' in app.DAO.groups_db
+    g = app.DAO.groups_db['cn=user1,ou=groups,dc=example,dc=com']
+    members = list(filter(lambda x: x[0] == "member", g))[0][1]
+    assert len(members) == 1
+    assert members == [b'cn=user1,ou=users,dc=example,dc=com', ]
+    owner = list(filter(lambda x: x[0] == "owner", g))
+    assert owner[0][1] == b'cn=user1,ou=users,dc=example,dc=com'
+
 
 def test_create_user_wrong_input(client):
     response = client.post('/users/users/')
