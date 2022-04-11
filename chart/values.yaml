@@ -1,0 +1,17 @@
+image:
+  name: registry.gitlab.exphost.pl/exphost-controller/usersservice
+  pullPolicy: Always
+  tag: v0.3.0
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: acme-issuer
+ldap:
+  uri: "ldap://ldap.example.com"
+  base: "dc=example,dc=com"
+  dn: "cn=admin,dc=example,dc=com"
+  password:
+    #secret: password-secret
+    #key: password
+    password: pass123
+global:
+  domain: example.com

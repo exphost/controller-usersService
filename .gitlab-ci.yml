@@ -1,9 +1,13 @@
+include:
+  - https://gitlab.exphost.pl/exphost/exphost-helms/-/raw/master/common/gitlab-ci.yml
+
 stages:
   - prepare
   - tests
   - build
   - push
   - deploy_to_dev
+  - upload
 
 
 tests:
@@ -23,6 +27,13 @@ tests:
   cache:
     paths:
       - .cache/pip
+
+helm lint:
+  stage: tests
+  image: alpine/helm
+  script:
+    - helm lint chart
+
 .registry:
   before_script:
     - echo -n $CI_REGISTRY_PASSWORD | podman login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
@@ -71,11 +82,18 @@ push tag:
     - podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     - podman push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
 
-deploy_to_dev:
-  image: bitnami/kubectl
-  stage: deploy_to_dev 
-  script:
-    - kubectl -n tenant-exphost-controller rollout restart deployment tenant-exphost-controller-exphost-controller-usersservice
-    - kubectl -n tenant-exphost-controller rollout status deployment tenant-exphost-controller-exphost-controller-usersservice
-  environment:
-    name: dev
+#deploy_to_dev:
+#  image: bitnami/kubectl
+#  stage: deploy_to_dev
+#  script:
+#    - kubectl -n tenant-exphost-controller rollout restart deployment tenant-exphost-controller-exphost-controller-usersservice
+#    - kubectl -n tenant-exphost-controller rollout status deployment tenant-exphost-controller-exphost-controller-usersservice
+#  environment:
+#    name: dev
+
+upload:
+  extends: .upload
+  only:
+    refs:
+      - tags
+      - master

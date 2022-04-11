@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chart.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: usersservice
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: LDAP_URI
+              value: {{ .Values.ldap.uri }}
+            - name: LDAP_BASE
+              value: {{ .Values.ldap.base }}
+            - name: LDAP_DN
+              value: {{ .Values.ldap.dn }}
+            - name: LDAP_PASSWORD
+{{- if .Values.ldap.password.password }}
+              value: "{{ .Values.ldap.password.password }}"
+{{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.ldap.password.secret }}
+                  key: {{ .Values.ldap.password.key }}
+{{- end }}
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /users/
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /users/
+              port: http
