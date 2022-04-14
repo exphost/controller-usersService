@@ -1,0 +1,23 @@
+usersservice:
+  enabled: false
+webui:
+  enabled: true
+  endpoints:
+    authendpoint:
+      url: https://auth.__DOMAIN__/dex
+      secret: Yp4fGf79FutdBDJArQqxhUiVbufVxjzu
+gateway:
+  image:
+    tag: dev
+  endpoints:
+    authendpoint: "https://auth.__DOMAIN__/dex"
+    usersservice: "http://test-controller-usersservice:5000/users/"
+
+adminPassword:
+  password: "pass123"
+configAdminPassword:
+  password: "pass123"
+initialDB:
+  serviceaccounts:
+  - name: dex
+    password: dex123

@@ -1,0 +1,7 @@
+image:
+  tag: dev
+ldap:
+  uri: "ldap://ldap-openldap"
+  dn: "cn=admin,dc=example,dc=com"
+  password:
+    password: pass123

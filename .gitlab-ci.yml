@@ -1,5 +1,6 @@
 include:
   - https://gitlab.exphost.pl/exphost/exphost-helms/-/raw/master/common/gitlab-ci.yml
+  - https://gitlab.exphost.pl/exphost-controller/controller-helms/-/raw/master/helpers/gitlab-ci.yml
 
 stages:
   - prepare
@@ -7,6 +8,8 @@ stages:
   - build
   - push
   - deploy_to_dev
+  - deploy
+  - cleanup
   - upload
 
 
@@ -43,14 +46,13 @@ build:
   image: quay.io/podman/stable
   extends: .registry
   script:
-    - podman pull $CI_REGISTRY_IMAGE:latest || true
+    - podman pull $CI_REGISTRY_IMAGE:dev || true
     - >
       podman build 
       --pull
       --build-arg http_proxy=$http_proxy
       --build-arg https_proxy=$https_proxy
       --build-arg no_proxy=$no_proxy
-      --cache-from $CI_REGISTRY_IMAGE:latest
       --tag $CI_REGISTRY_IMAGE:dev
       .
 
@@ -97,3 +99,13 @@ upload:
     refs:
       - tags
       - master
+
+deploy branch:
+  extends: .deploy branch
+  variables:
+    APP: usersservice
+
+delete_app:
+  extends: .delete_app
+  variables:
+    APP: usersservice
