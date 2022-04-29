@@ -100,6 +100,13 @@ upload:
       - tags
       - master
 
+upload latest:
+  extends: .upload latest
+  only:
+    refs:
+      - tags
+      - master
+
 deploy branch:
   extends: .deploy branch
   variables:
