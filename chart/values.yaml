@@ -1,7 +1,7 @@
 image:
   name: registry.gitlab.exphost.pl/exphost-controller/usersservice
   pullPolicy: Always
-  tag: v0.3.0
+  tag:
 ingress:
   annotations:
     cert-manager.io/cluster-issuer: acme-issuer
