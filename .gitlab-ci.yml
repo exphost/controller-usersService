@@ -121,7 +121,7 @@ update general helm:
   extends: .deploy-to-git
   stage: upload
   variables:
-    patch_cmd: yq -i e ".dependencies[] |= select(.name == \"usersservice\").version\"$$VERSION\"" chart/Chart.yaml
+    patch_cmd: yq -i e ".dependencies[] |= select(.name == \"usersservice\").version=\"$$VERSION\"" chart/Chart.yaml
     repo: git@gitlab.exphost.pl:exphost-controller/controller-helms.git
   only:
     refs:
