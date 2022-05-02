@@ -12,6 +12,8 @@ stages:
   - cleanup
   - upload
 
+get version:
+  extends: .get version
 
 tests:
   stage: tests
@@ -70,6 +72,8 @@ push latest:
     - podman pull $CI_REGISTRY_IMAGE:dev
     - podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:latest
     - podman push $CI_REGISTRY_IMAGE:latest
+    - "podman tag $CI_REGISTRY_IMAGE:dev $CI_REGISTRY_IMAGE:$(cat output/version.txt)"
+    - "podman push $CI_REGISTRY_IMAGE:$(cat output/version.txt)"
 
 push tag:
   variables:
