@@ -116,3 +116,9 @@ delete_app:
   extends: .delete_app
   variables:
     APP: usersservice
+
+update general helm:
+  extends: .deploy-to-git
+  state: upload
+  variables:
+    patch_cmd: yq -i e ".dependencies[] |= select(.name == \"usersservice\").version\"$$VERSION\"" chart/Chart.yaml
