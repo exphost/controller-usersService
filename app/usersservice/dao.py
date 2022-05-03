@@ -59,3 +59,27 @@ class DAO:
         ]
         print(dn, entry)
         print(self.ldap.add_s(dn, entry))
+
+    def get_user(self, cn):
+        try:
+            u = self.ldap.search_s("ou=users," + self.base,
+                                   ldap.SCOPE_SUBTREE,
+                                   "(cn={cn})".format(cn=cn),
+                                   ['cn', 'mail', 'gn', 'sn']
+                                   )[0][1]
+            g = self.ldap.search_s("ou=groups," + self.base,
+                                   ldap.SCOPE_SUBTREE,
+                                   "(member=cn={cn},ou=users,{base})".format(
+                                        cn=cn, base=self.base),
+                                   ['cn'])
+            print(u)
+            groups = [x[1]['cn'][0].decode() for x in g]
+            return {'cn': u['cn'][0].decode(),
+                    'gn': u['givenName'][0].decode(),
+                    'sn': u['sn'][0].decode(),
+                    'mail': u['mail'][0].decode(),
+                    'groups': groups
+                    }
+
+        except IndexError:
+            return None

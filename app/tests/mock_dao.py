@@ -10,9 +10,7 @@ class MockDAO:
 
     def _look_for_email(self, mail):
         # sum([len(list(filter(lambda i:i[1]=="mb1", y))) for y in x.values()])
-        print("AAAAA")
         for entry in self.users_db.values():
-            print(entry)
             if list(filter(lambda i: i[1] == mail.encode(), entry)):
                 return True
         return False
@@ -60,3 +58,26 @@ class MockDAO:
         ]
         self.groups_db[dn] = entry
         return entry
+
+    def get_user(self, cn):
+        # sum([len(list(filter(lambda i:i[1]=="mb1", y))) for y in x.values()])
+        for entry in self.users_db.values():
+            if list(filter(lambda i: i[1] == cn.encode(), entry)):
+                u = "cn={cn},ou=users,{base}".format(
+                    cn=cn,
+                    base=self.base
+                    ).encode()
+                groups = []
+                for i in self.groups_db.items():
+                    for j in i[1]:
+                        if j[0] == "member":
+                            if u in j[1]:
+                                groups.append(i[0].split(",")[0].split("=")[1])
+
+                return {'cn': entry[1][1].decode(),
+                        'gn': entry[2][1].decode(),
+                        'sn': entry[3][1].decode(),
+                        'mail': entry[4][1].decode(),
+                        'groups': groups
+                        }
+        return None

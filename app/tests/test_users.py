@@ -78,8 +78,30 @@ def test_userinfo_noauth(client):
     assert response.status_code == 401
 
 
-def test_userinfo(client):
+def test_userinfo_non_existing(app, client):
+    app.DAO.create_user("user1", "user1", "sn1", "mail1@mail.com", "pass1")
+    app.DAO.create_user("user2", "user2", "sn2", "mail2@mail.com", "pass2")
+    app.DAO.create_group("g1", "user1", ["user1", ])
+    app.DAO.create_group("g2", "user1", ["user1", "user2"])
+    app.DAO.create_group("g3", "user2", ["user2", ])
+    app.DAO.create_group("g4", "user2", ["user2", "user1"])
     response = client.get('/users/userinfo',
-                          headers={'X-User': 'test-user'})
+                          headers={'X-User': 'user3'})
+    assert response.status_code == 404
+
+
+def test_userinfo(app, client):
+    app.DAO.create_user("user1", "user1", "sn1", "mail1@mail.com", "pass1")
+    app.DAO.create_user("user2", "user2", "sn2", "mail2@mail.com", "pass2")
+    app.DAO.create_group("g1", "user1", ["user1", ])
+    app.DAO.create_group("g2", "user1", ["user1", "user2"])
+    app.DAO.create_group("g3", "user2", ["user2", ])
+    app.DAO.create_group("g4", "user2", ["user2", "user1"])
+    response = client.get('/users/userinfo',
+                          headers={'X-User': 'user1'})
     assert response.status_code == 200
-    assert response.json == {'username': 'test-user'}
+    assert response.json == {'username': 'user1',
+                             'groups': ["g1", "g2", "g4"],
+                             'sn': "sn1",
+                             'gn': "user1",
+                             'mail': "mail1@mail.com"}

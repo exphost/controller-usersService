@@ -62,6 +62,13 @@ class User(Resource):
 class UserInfo(Resource):
     @auth_required
     def get(self):
-        username = request.headers.get('X-User')
-        api.logger.debug(f"Getting userinfo: {username}")
-        return {'username': username}
+        user = current_app.DAO.get_user(request.headers.get('X-User'))
+        api.logger.debug(f"Getting userinfo: {user}")
+        if not user:
+            return None, 404
+
+        return {'username': user['cn'],
+                'groups': user['groups'],
+                'sn': user['sn'],
+                'gn': user['gn'],
+                'mail': user['mail']}
