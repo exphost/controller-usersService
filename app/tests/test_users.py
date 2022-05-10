@@ -105,3 +105,13 @@ def test_userinfo(app, client):
                              'sn': "sn1",
                              'gn': "user1",
                              'mail': "mail1@mail.com"}
+
+
+def test_create_user_blacklist(app, client):
+    response = client.post('/users/users/', json={'login': 'k8s-admins',
+                                                  'gn': 'Robert',
+                                                  'sn': 'Baran',
+                                                  'mail': 'rbaran@example.com',
+                                                  'password': 'baranek'})
+
+    assert response.status_code == 403

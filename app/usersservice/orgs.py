@@ -1,6 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
+from .helpers import name_allowed
 
 bp = Blueprint('groups', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
@@ -33,6 +34,8 @@ class Org(Resource):
         user = request.headers.get("X-User", None)
         if not user:
             return "Not Authorized", 401
+        if not name_allowed(request.json['name']):
+            return "Name not allowed", 403
         api.logger.info("Creating org: {org}".format(
             org=request.json.get('cn', "__not_present")
         ))

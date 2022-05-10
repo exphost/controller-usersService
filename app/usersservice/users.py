@@ -1,7 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
-from .helpers import auth_required
+from .helpers import auth_required, name_allowed
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
@@ -42,6 +42,8 @@ user_model = api.model(
 class User(Resource):
     @api.expect(user_model, validate=True)
     def post(self):
+        if not name_allowed(request.json['login']):
+            return "Name not allowed", 403
         api.logger.info("Creating user: {user}".format(
             user=request.json.get('login', "__not_present")
         ))

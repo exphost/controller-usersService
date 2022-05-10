@@ -55,3 +55,10 @@ def test_groups_create_org_duplicate(app, client):
                            json={'name': 'test_org'},
                            headers={'X-User': 'test_user'})
     assert response.status_code == 409
+
+
+def test_groups_create_org_blacklist(app, client):
+    response = client.post('/users/groups/',
+                           json={'name': 'k8s-admins'},
+                           headers={'X-User': 'test_user'})
+    assert response.status_code == 403
