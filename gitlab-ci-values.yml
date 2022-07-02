@@ -14,6 +14,10 @@ gateway:
     usersservice: "http://test-usersservice:5000/users/"
     appsservice: "http://test-appsservice:5000"
 
+landingpage:
+  ingress:
+    hostname: __DOMAIN__
+
 appsservice:
   git_repo:
     url: git@gitlab.exphost.pl:exphost-controller/test_tenants_repo.git
