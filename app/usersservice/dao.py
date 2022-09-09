@@ -11,22 +11,12 @@ class DAO:
             app.config['LDAP_PASSWORD']
         )
 
-    def _look_for_email(self, mail):
-        m = self.ldap.search_s(self.base,
-                               ldap.SCOPE_SUBTREE,
-                               "(mail={mail})".format(mail=mail),
-                               ['mail']
-                               )
-        return m
-
     def create_user(self, login, gn, sn, mail, password, org="users"):
         dn = "cn={login},ou={org},{base}".format(
             login=login,
             base=self.base,
             org=org
         )
-        if self._look_for_email(mail):
-            raise ldap.ALREADY_EXISTS
         pass_hash = passlib.hash.sha512_crypt.hash(password)
         entry = [
             ('objectClass', [b"inetOrgPerson"]),
@@ -72,7 +62,6 @@ class DAO:
                                    "(member=cn={cn},ou=users,{base})".format(
                                         cn=cn, base=self.base),
                                    ['cn'])
-            print(u)
             groups = [x[1]['cn'][0].decode() for x in g]
             return {'cn': u['cn'][0].decode(),
                     'gn': u['givenName'][0].decode(),

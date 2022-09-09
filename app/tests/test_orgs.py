@@ -1,3 +1,6 @@
+import ldap
+
+
 def test_groups_create_single_org_no_auth(client):
     response = client.post('/users/groups/', json={'name': 'test_org'})
     assert response.status_code == 401
@@ -11,14 +14,16 @@ def test_groups_create_org_single_user(app, client):
     assert response.json == {'name': 'test_org',
                              'owner': 'test_user',
                              'members': ['test_user']}
-    assert len(app.DAO.groups_db) == 1
-    u = app.DAO.groups_db['cn=test_org,ou=groups,dc=example,dc=com']
-    cn = list(filter(lambda x: x[0] == "cn", u))[0][1]
-    assert cn == b"test_org"
-    owner = list(filter(lambda x: x[0] == "owner", u))[0][1]
-    assert owner == b"cn=test_user,ou=users,dc=example,dc=com"
-    members = list(filter(lambda x: x[0] == "member", u))
-    assert members[0][1] == [b"cn=test_user,ou=users,dc=example,dc=com"]
+    app.DAO.ldap.add_s.assert_called_once_with(
+        'cn=test_org,ou=groups,dc=example,dc=com',
+        [
+            ('objectClass', [b'groupOfNames']),
+            ('cn', b'test_org'),
+            ('owner', b'cn=test_user,ou=users,dc=example,dc=com'),
+            ('member', [
+                b'cn=test_user,ou=users,dc=example,dc=com'
+            ])
+        ])
 
 
 def test_groups_create_org_multi_user(app, client):
@@ -32,21 +37,26 @@ def test_groups_create_org_multi_user(app, client):
     result_memebers = sorted(response.json['members'])
     expected_members_list = sorted(['test_user', 'test_user2', 'test_user3'])
     assert result_memebers == expected_members_list
+    app.DAO.ldap.add_s.assert_called_once_with(
+        'cn=test_org,ou=groups,dc=example,dc=com',
+        [
+            ('objectClass', [b'groupOfNames']),
+            ('cn', b'test_org'),
+            ('owner', b'cn=test_user,ou=users,dc=example,dc=com'),
+            ('member', [
+                b'cn=test_user2,ou=users,dc=example,dc=com',
+                b'cn=test_user3,ou=users,dc=example,dc=com',
+                b'cn=test_user,ou=users,dc=example,dc=com',
+            ])
+        ])
 
-    assert len(app.DAO.groups_db) == 1
-    u = app.DAO.groups_db['cn=test_org,ou=groups,dc=example,dc=com']
-    cn = list(filter(lambda x: x[0] == "cn", u))[0][1]
-    assert cn == b"test_org"
-    owner = list(filter(lambda x: x[0] == "owner", u))[0][1]
-    assert owner == b"cn=test_user,ou=users,dc=example,dc=com"
-    members = sorted(list(filter(lambda x: x[0] == "member", u))[0][1])
-    expected_members = sorted([b"cn=test_user,ou=users,dc=example,dc=com",
-                               b"cn=test_user2,ou=users,dc=example,dc=com",
-                               b"cn=test_user3,ou=users,dc=example,dc=com"])
-    assert members == expected_members
 
-
-def test_groups_create_org_duplicate(app, client):
+def test_groups_create_org_duplicate(app, client, mocker):
+    mocker.patch.object(
+        app.DAO.ldap,
+        'add_s',
+        side_effect=[None, ldap.ALREADY_EXISTS]
+    )
     response = client.post('/users/groups/',
                            json={'name': 'test_org'},
                            headers={'X-User': 'test_user'})

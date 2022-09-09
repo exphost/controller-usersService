@@ -1,9 +1,15 @@
-def test_create_user(app, client):
-    response = client.post('/users/users/', json={'login': 'user1',
-                                                  'gn': 'Robert',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'baranek'})
+import ldap
+
+
+def test_create_user(app, client, mocker):
+    response = client.post(
+        '/users/users/',
+        json={
+            'login': 'user1',
+            'gn': 'Robert',
+            'sn': 'Baran',
+            'mail': 'rbaran@example.com',
+            'password': 'baranek'})
 
     assert response.status_code == 201
     assert response.json == {
@@ -12,21 +18,29 @@ def test_create_user(app, client):
                             'sn': 'Baran',
                             'mail': 'rbaran@example.com',
                             'password': 'baranek'}
-    assert len(app.DAO.users_db) == 1
-    u = app.DAO.users_db['cn=user1,ou=users,dc=example,dc=com']
-    username = list(filter(lambda x: x[0] == "cn", u))[0][1]
-    assert username == b"user1"
-    email = list(filter(lambda x: x[0] == "mail", u))[0][1]
-    assert email == b"rbaran@example.com"
+    app.DAO.ldap.add_s.assert_has_calls(
+        [mocker.call(
+            'cn=user1,ou=users,dc=example,dc=com',
+            [
+                ('objectClass', [b'inetOrgPerson']),
+                ('cn', b'user1'),
+                ('gn', b'Robert'),
+                ('sn', b'Baran'),
+                ('mail', b'rbaran@example.com'),
+                ('userPassword', mocker.ANY),
+            ]
 
-    # check the default group creation
-    assert 'cn=user1,ou=groups,dc=example,dc=com' in app.DAO.groups_db
-    g = app.DAO.groups_db['cn=user1,ou=groups,dc=example,dc=com']
-    members = list(filter(lambda x: x[0] == "member", g))[0][1]
-    assert len(members) == 1
-    assert members == [b'cn=user1,ou=users,dc=example,dc=com', ]
-    owner = list(filter(lambda x: x[0] == "owner", g))
-    assert owner[0][1] == b'cn=user1,ou=users,dc=example,dc=com'
+        )],
+        [mocker.call(
+            'cn=user1,ou=groups,dc=example,dc=com',
+            [
+                ('objectClass', [b'groupOfNames']),
+                ('cn', b'user1'),
+                ('owner', b'cn=user1,ou=users,dc=example,dc=com'),
+                ('member', [b'cn=user1,ou=users,dc=example,dc=com']),
+            ]
+        )]
+        )
 
 
 def test_create_user_wrong_input(client):
@@ -34,7 +48,7 @@ def test_create_user_wrong_input(client):
     assert response.status_code == 400
 
 
-def test_duplicate_user(client):
+def test_duplicate_user(app, client, mocker):
     response = client.post('/users/users/', json={'login': 'user1',
                                                   'gn': 'Robert',
                                                   'sn': 'Baran',
@@ -42,6 +56,11 @@ def test_duplicate_user(client):
                                                   'password': 'baranek'})
 
     assert response.status_code == 201
+    mocker.patch.object(
+        app.DAO.ldap,
+        'add_s',
+        side_effect=[ldap.ALREADY_EXISTS]
+    )
     response = client.post('/users/users/', json={'login': 'user1',
                                                   'gn': 'Robert',
                                                   'sn': 'Baran',
@@ -56,7 +75,7 @@ def test_create_user_get_405(client):
     assert response.status_code == 405
 
 
-def test_duplicate_user_email(client):
+def test_duplicate_user_email(app, client, mocker):
     response = client.post('/users/users/', json={'login': 'user1',
                                                   'gn': 'Robert',
                                                   'sn': 'Baran',
@@ -64,6 +83,11 @@ def test_duplicate_user_email(client):
                                                   'password': 'baranek'})
 
     assert response.status_code == 201
+    mocker.patch.object(
+        app.DAO.ldap,
+        'add_s',
+        side_effect=[ldap.ALREADY_EXISTS]
+    )
     response = client.post('/users/users/', json={'login': 'user2',
                                                   'gn': 'Renata',
                                                   'sn': 'Baran',
@@ -78,30 +102,58 @@ def test_userinfo_noauth(client):
     assert response.status_code == 401
 
 
-def test_userinfo_non_existing(app, client):
-    app.DAO.create_user("user1", "user1", "sn1", "mail1@mail.com", "pass1")
-    app.DAO.create_user("user2", "user2", "sn2", "mail2@mail.com", "pass2")
-    app.DAO.create_group("g1", "user1", ["user1", ])
-    app.DAO.create_group("g2", "user1", ["user1", "user2"])
-    app.DAO.create_group("g3", "user2", ["user2", ])
-    app.DAO.create_group("g4", "user2", ["user2", "user1"])
+def test_userinfo_non_existing(app, client, mocker):
+    mocker.patch.object(
+        app.DAO.ldap,
+        'search_s',
+        return_value=[]
+    )
     response = client.get('/users/userinfo',
                           headers={'X-User': 'user3'})
     assert response.status_code == 404
 
 
-def test_userinfo(app, client):
-    app.DAO.create_user("user1", "user1", "sn1", "mail1@mail.com", "pass1")
-    app.DAO.create_user("user2", "user2", "sn2", "mail2@mail.com", "pass2")
-    app.DAO.create_group("g1", "user1", ["user1", ])
-    app.DAO.create_group("g2", "user1", ["user1", "user2"])
-    app.DAO.create_group("g3", "user2", ["user2", ])
-    app.DAO.create_group("g4", "user2", ["user2", "user1"])
+def test_userinfo(app, client, mocker):
+    mocker.patch.object(
+        app.DAO.ldap,
+        'search_s',
+        side_effect=[
+            [[
+                'cn=user1,ou=users,dc=example,dc=com',
+                {
+                    'objectClass': [b'inetOrgPerson'],
+                    'cn': [b'user1'],
+                    'givenName': [b'user1'],
+                    'sn': [b'sn1'],
+                    'mail': [b'mail1@mail.com'],
+                }
+            ]],
+            [
+                [
+                    'cn=g1,ou=groups,dc=example,dc=com',
+                    {
+                        'objectClass': [b'groupOfNames'],
+                        'cn':  [b'g1'],
+                        'owner':  [b'cn=user1,ou=users,dc=example,dc=com'],
+                        'member': [b'cn=user1,ou=users,dc=example,dc=com'],
+                    }
+                ],
+                [
+                    'cn=g2,ou=groups,dc=example,dc=com',
+                    {
+                        'objectClass': [b'groupOfNames'],
+                        'cn':  [b'g2'],
+                        'owner':  [b'cn=user1,ou=users,dc=example,dc=com'],
+                        'member': [b'cn=user1,ou=users,dc=example,dc=com'],
+                    }
+                ],
+            ]
+        ])
     response = client.get('/users/userinfo',
                           headers={'X-User': 'user1'})
     assert response.status_code == 200
     assert response.json == {'username': 'user1',
-                             'groups': ["g1", "g2", "g4"],
+                             'groups': ["g1", "g2"],
                              'sn': "sn1",
                              'gn': "user1",
                              'mail': "mail1@mail.com"}
