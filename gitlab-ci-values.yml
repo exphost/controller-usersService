@@ -12,7 +12,8 @@ gateway:
   endpoints:
     authendpoint: "https://auth.__DOMAIN__/dex"
     usersservice: "http://test-usersservice:5000/users/"
-    appsservice: "http://test-appsservice:5000"
+    appsservice: "http://test-controller-appsservice:5000"
+    domainsservice: "http://test-controller-domainsservice:5000"
 
 landingpage:
   ingress:

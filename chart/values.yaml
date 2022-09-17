@@ -13,5 +13,7 @@ ldap:
     #secret: password-secret
     #key: password
     password: pass123
+endpoints:
+  apigateway: http://gateway:5000/graphql
 global:
   domain: example.com

@@ -42,6 +42,8 @@ spec:
                   name: {{ .Values.ldap.password.secret }}
                   key: {{ .Values.ldap.password.key }}
 {{- end }}
+            - name: APIGATEWAY_URL
+              value: {{ .Values.endpoints.apigateway }}
           ports:
             - name: http
               containerPort: 5000

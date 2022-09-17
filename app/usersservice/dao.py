@@ -72,3 +72,31 @@ class DAO:
 
         except IndexError:
             return None
+
+    def create_email(self, mail, cn, sn, password, aliases, ou="mails"):
+        dn = "maildrop={mail},ou={ou},{base}".format(
+            mail=mail,
+            base=self.base,
+            ou=ou
+        )
+        pass_hash = passlib.hash.sha512_crypt.hash(password)
+        entry = [
+            ('objectClass', [b"person", b"postfixUser"]),
+            ('cn', cn.encode()),
+            ('sn', sn.encode()),
+            ('maildrop', mail.encode()),
+            ('mailacceptinggeneralid', aliases),
+            ('userPassword', ("{crypt}%s" % pass_hash).encode()),
+        ]
+        print(dn, entry)
+        ret = self.ldap.add_s(dn, entry)
+        print(ret)
+        return ret
+
+    def get_emails(self, domain, ou="mails"):
+        mails = self.ldap.search_s(
+            "ou=" + ou + "," + self.base,
+            ldap.SCOPE_SUBTREE,
+            "(mailacceptinggeneralid=*@{domain})".format(domain=domain),
+            )
+        return mails
