@@ -56,6 +56,9 @@ def org_authorized(fn):
         org = request.args.get('org', None)
         user = request.headers.get('Authorization', None)
         user = user.split(" ")[1].split(".")[1]
+        # add padding to base64 token
+        if len(user) % 4:
+            user += '=' * (4 - len(user) % 4)
         user = base64.b64decode(user)
         user = json.loads(user)
         if org not in user['groups']:
