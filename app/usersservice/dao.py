@@ -99,4 +99,15 @@ class DAO:
             ldap.SCOPE_SUBTREE,
             "(mailacceptinggeneralid=*@{domain})".format(domain=domain),
             )
+        mails = [
+            {
+                "mail": mail[1]['maildrop'][0].decode(),
+                "cn": mail[1]['cn'][0].decode(),
+                "sn": mail[1]['sn'][0].decode(),
+                "aliases": [
+                    alias.decode()
+                    for alias in mail[1]['mailacceptinggeneralid']
+                ]
+            } for mail in mails
+        ]
         return mails
