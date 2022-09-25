@@ -14,6 +14,7 @@ gateway:
     usersservice: "http://test-usersservice:5000/users/"
     appsservice: "http://test-controller-appsservice:5000"
     domainsservice: "http://test-controller-domainsservice:5000"
+    emailsservice: "http://test-usersservice:5000/"
 
 landingpage:
   ingress:
