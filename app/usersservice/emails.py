@@ -1,7 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import cracklib
-from .helpers import auth_required_v2, org_required, org_authorized
+from .helpers import has_access_to_org
 from .helpers import generate_password
 
 bp = Blueprint('emails', __name__, url_prefix='/v1/emails')
@@ -43,9 +43,7 @@ email_model = api.model(
 @api.route("/", endpoint='emails')
 class Email(Resource):
     @api.expect(email_model, validate=True)
-    @auth_required_v2
-    @org_required
-    @org_authorized
+    @has_access_to_org
     def post(self):
         domain = request.json.get('mail').split('@')[1]
         org = request.args.get('org')
@@ -76,9 +74,7 @@ class Email(Resource):
         mail['aliases'].remove(mail['mail'])
         return mail, 201
 
-    @auth_required_v2
-    @org_required
-    @org_authorized
+    @has_access_to_org
     def get(self):
         org = request.args.get('org')
         token = request.headers.get('Authorization')

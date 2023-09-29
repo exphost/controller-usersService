@@ -1,7 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
-from .helpers import name_allowed
+from .helpers import name_allowed, auth_required
 
 bp = Blueprint('groups', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
@@ -30,10 +30,8 @@ org_model = api.model(
 @api.route("/groups/", endpoint='groups')
 class Org(Resource):
     @api.expect(org_model, validate=True)
+    @auth_required
     def post(self):
-        user = request.headers.get("X-User", None)
-        if not user:
-            return "Not Authorized", 401
         if not name_allowed(request.json['name']):
             return "Name not allowed", 403
         api.logger.info("Creating org: {org}".format(
@@ -41,8 +39,8 @@ class Org(Resource):
         ))
         org_obj = {
             'name': request.json['name'],
-            'owner': user,
-            'members': request.json.get("members", []) + [user, ]
+            'owner': request.user,
+            'members': request.json.get("members", []) + [request.user, ]
         }
         try:
             current_app.DAO.create_group(**org_obj)

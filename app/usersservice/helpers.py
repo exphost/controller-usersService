@@ -1,36 +1,13 @@
-from flask import request
+from flask import request, current_app
 import secrets
 import string
-import base64
-import json
+import requests
 
 
 def name_allowed(name):
     return name not in ['k8s-admins',
                         'argo-admins',
                         'grafana-admins']
-
-
-def auth_required(fn):
-    def wrapper(*args, **kwargs):
-        if not request.headers.get('X-User', None):
-            return {'error': 'Not authenticated'}, 401
-        return fn(*args, **kwargs)
-    return wrapper
-
-
-def auth_required_v2(fn):
-    def wrapper(*args, **kwargs):
-        user = request.headers.get('Authorization', None)
-        if not user:
-            return 'Not authenticated', 401
-        user = user.split()
-        if user[0] != "Bearer":
-            return 'Not authenticated', 401
-        if len(user) != 2:
-            return 'Not authenticated', 401
-        return fn(*args, **kwargs)
-    return wrapper
 
 
 def org_required(fn):
@@ -51,17 +28,42 @@ def generate_password(length=16):
     return ''.join(secrets.choice(all) for i in range(length))
 
 
-def org_authorized(fn):
+def auth_required(fn):
     def wrapper(*args, **kwargs):
-        org = request.args.get('org', None)
-        user = request.headers.get('Authorization', None)
-        user = user.split(" ")[1].split(".")[1]
-        # add padding to base64 token
-        if len(user) % 4:
-            user += '=' * (4 - len(user) % 4)
-        user = base64.b64decode(user)
-        user = json.loads(user)
-        if org not in user['groups']:
-            return "Org not authorized", 403
+        if not request.headers.get('Authorization', None):
+            return {'error': 'Not authenticated'}, 401
+        claims_response = requests.post(
+            current_app.config['AUTHSERVICE_ENDPOINT'] + '/api/auth/v1/token/validate',  # noqa E501
+            headers={'Authorization': request.headers['Authorization']}
+        )
+        if claims_response.status_code != 200:
+            return {'error': 'Not authenticated'}, 401
+        print("AAA: ", claims_response.json())
+        request.user = claims_response.json()['claims']['name']
+        return fn(*args, **kwargs)
+    return wrapper
+
+
+def has_access_to_org(fn):
+    def wrapper(*args, **kwargs):
+        if not request.headers.get('Authorization', None):
+            return {'error': 'Not authenticated'}, 401
+        claims_response = requests.post(
+            current_app.config['AUTHSERVICE_ENDPOINT'] + '/api/auth/v1/token/validate',  # noqa E501
+            headers={'Authorization': request.headers['Authorization']}
+        )
+        if claims_response.status_code != 200:
+            return {'error': 'Not authenticated'}, 401
+        print("AAA: ", claims_response.json())
+        groups = claims_response.json()['claims']['groups']
+
+        if request.method == "POST":
+            org = request.args['org']
+        elif request.method == "GET":
+            org = request.args['org']
+        else:
+            return {'error': 'Method not implemented'}, 501
+        if org not in groups:
+            return {'error': 'Org not permitted'}, 403
         return fn(*args, **kwargs)
     return wrapper

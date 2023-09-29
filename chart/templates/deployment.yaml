@@ -44,6 +44,8 @@ spec:
 {{- end }}
             - name: APIGATEWAY_URL
               value: {{ .Values.endpoints.apigateway }}
+            - name: AUTHSERVICE_ENDPOINT
+              value: "https://{{ .Values.global.domain }}"
           ports:
             - name: http
               containerPort: 5000

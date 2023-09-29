@@ -102,18 +102,20 @@ def test_userinfo_noauth(client):
     assert response.status_code == 401
 
 
-def test_userinfo_non_existing(app, client, mocker):
+def test_userinfo_non_existing(app, client, mocker, domains_mock):
     mocker.patch.object(
         app.DAO.ldap,
         'search_s',
         return_value=[]
     )
-    response = client.get('/users/userinfo',
-                          headers={'X-User': 'user3'})
+    response = client.get(
+        '/users/userinfo',
+        headers={'Authorization': 'Bearer user1'}
+    )
     assert response.status_code == 404
 
 
-def test_userinfo(app, client, mocker):
+def test_userinfo(app, client, mocker, domains_mock):
     mocker.patch.object(
         app.DAO.ldap,
         'search_s',
@@ -149,8 +151,10 @@ def test_userinfo(app, client, mocker):
                 ],
             ]
         ])
-    response = client.get('/users/userinfo',
-                          headers={'X-User': 'user1'})
+    response = client.get(
+        '/users/userinfo',
+        headers={'Authorization': 'Bearer user1'}
+    )
     assert response.status_code == 200
     assert response.json == {'username': 'user1',
                              'groups': ["g1", "g2"],

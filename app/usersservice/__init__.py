@@ -15,8 +15,11 @@ def create_app(test_config=None):
         LDAP_BASE=os.environ.get("LDAP_BASE", ""),
         LDAP_DN=os.environ.get("LDAP_DN", ""),
         LDAP_PASSWORD=os.environ.get("LDAP_PASSWORD", ""),
-        APIGATEWAY_URL=os.environ.get("APIGATEWAY_URL"),
+        AUTHSERVICE_ENDPOINT=os.environ.get("AUTHSERVICE_ENDPOINT", None),
+        APIGATEWAY_URL=os.environ.get("APIGATEWAY_URL")
     )
+    if not app.config['AUTHSERVICE_ENDPOINT']:
+        raise Exception('AUTHSERVICE_ENDPOINT is not defined')
     app.config['APPLICATION_ROOT'] = "/"
     app.config['PASSWORDS_DICT'] = '/srv/dicts/dict.db'
     app.logger.setLevel(os.environ.get("LOG_LEVEL", "INFO"))

@@ -12,3 +12,5 @@ WORKDIR /app
 #CMD waitress-serve --port 5000 --call 'usersservice:create_app'
 CMD gunicorn --bind 0.0.0.0:5000 wsgi:app --access-logfile -
 COPY app /app
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN git clone https://gitlab.exphost.pl/exphost-controller/apispec.git

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, current_app
 from flask_restx import Api, Resource, fields
 import ldap
-from .helpers import auth_required, name_allowed
+from .helpers import name_allowed, auth_required
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 api = Api(bp, doc='/')
@@ -64,10 +64,10 @@ class User(Resource):
 class UserInfo(Resource):
     @auth_required
     def get(self):
-        user = current_app.DAO.get_user(request.headers.get('X-User'))
+        user = current_app.DAO.get_user(request.user)
         api.logger.debug(f"Getting userinfo: {user}")
         if not user:
-            return None, 404
+            return {}, 404
 
         return {'username': user['cn'],
                 'groups': user['groups'],
