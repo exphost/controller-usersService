@@ -5,6 +5,7 @@ image:
 ingress:
   annotations:
     cert-manager.io/cluster-issuer: acme-issuer
+
 ldap:
   uri: "ldap://ldap.example.com"
   base: "dc=example,dc=com"

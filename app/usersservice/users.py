@@ -3,7 +3,7 @@ from flask_restx import Api, Resource, fields
 import ldap
 from .helpers import name_allowed, auth_required
 
-bp = Blueprint('users', __name__, url_prefix='/users')
+bp = Blueprint('users', __name__, url_prefix='/api/users/v1/users')
 api = Api(bp, doc='/')
 
 user_model = api.model(

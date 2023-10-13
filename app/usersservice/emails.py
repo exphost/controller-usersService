@@ -4,7 +4,7 @@ import cracklib
 from .helpers import has_access_to_org
 from .helpers import generate_password
 
-bp = Blueprint('emails', __name__, url_prefix='/v1/emails')
+bp = Blueprint('emails', __name__, url_prefix='/api/users//v1/emails')
 api = Api(bp, doc='/')
 
 

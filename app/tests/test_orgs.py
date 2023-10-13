@@ -2,13 +2,15 @@ import ldap
 
 
 def test_groups_create_single_org_no_auth(client):
-    response = client.post('/users/groups/', json={'name': 'test_org'})
+    response = client.post(
+        '/api/users/v1/users/groups/',
+        json={'name': 'test_org'})
     assert response.status_code == 401
 
 
 def test_groups_create_org_single_user(app, client, domains_mock):
     response = client.post(
-        '/users/groups/',
+        '/api/users/v1/users/groups/',
         json={'name': 'test_org'},
         headers={'Authorization': 'Bearer user1'})
     assert response.status_code == 201
@@ -28,7 +30,7 @@ def test_groups_create_org_single_user(app, client, domains_mock):
 
 
 def test_groups_create_org_multi_user(app, client, domains_mock):
-    response = client.post('/users/groups/',
+    response = client.post('/api/users/v1/users/groups/',
                            json={'name': 'test_org',
                                  'members': ['test_user2', 'test_user3']},
                            headers={'Authorization': 'Bearer user1'})
@@ -58,18 +60,18 @@ def test_groups_create_org_duplicate(app, client, mocker, domains_mock):
         'add_s',
         side_effect=[None, ldap.ALREADY_EXISTS]
     )
-    response = client.post('/users/groups/',
+    response = client.post('/api/users/v1/users/groups/',
                            json={'name': 'test_org'},
                            headers={'Authorization': 'Bearer user1'})
     assert response.status_code == 201
-    response = client.post('/users/groups/',
+    response = client.post('/api/users/v1/users/groups/',
                            json={'name': 'test_org'},
                            headers={'Authorization': 'Bearer user1'})
     assert response.status_code == 409
 
 
 def test_groups_create_org_blacklist(app, client, domains_mock):
-    response = client.post('/users/groups/',
+    response = client.post('/api/users/v1/users/groups/',
                            json={'name': 'k8s-admins'},
                            headers={'Authorization': 'Bearer user1'})
     assert response.status_code == 403

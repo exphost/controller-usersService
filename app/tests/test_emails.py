@@ -5,7 +5,7 @@ from .conftest import USER_TOKEN
 def test_create_email(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -41,7 +41,7 @@ def test_create_email(app, client, mocker, domains_mock):
 def test_create_email_random_pass(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -81,13 +81,13 @@ def test_create_email_random_pass(app, client, mocker, domains_mock):
 
 def test_create_email_missing_attributes(app, client, mocker, domains_mock):
     response = client.post(
-        '/v1/emails/?=test-org',
+        '/api/users/v1/emails/?=test-org',
         headers={'Authorization': 'Bearer ' + USER_TOKEN}
     )
     assert response.status_code == 400
 
     response = client.post(
-        '/v1/emails/?test-org',
+        '/api/users/v1/emails/?test-org',
         json={
             'mail': 'test-box@example.com',
             'sn': 'testing',
@@ -99,7 +99,7 @@ def test_create_email_missing_attributes(app, client, mocker, domains_mock):
     assert response.status_code == 400
 
     response = client.post(
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         json={
             'mail': 'test-box@example.com',
             'cn': 'test-box',
@@ -111,7 +111,7 @@ def test_create_email_missing_attributes(app, client, mocker, domains_mock):
     assert response.status_code == 400
 
     response = client.post(
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         json={
             'cn': 'test-box',
             'sn': 'testing',
@@ -126,7 +126,7 @@ def test_create_email_missing_attributes(app, client, mocker, domains_mock):
 def test_create_email_unauthorized_org(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=some-org',
+        '/api/users/v1/emails/?org=some-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -142,7 +142,7 @@ def test_create_email_unauthorized_org(app, client, mocker, domains_mock):
 def test_create_email_to_simple_password(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -159,7 +159,7 @@ def test_create_email_to_simple_password(app, client, mocker, domains_mock):
 def test_create_email_unauthorized_domain(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -175,7 +175,7 @@ def test_create_email_unauthorized_domain(app, client, mocker, domains_mock):
 
 def test_create_email_unauthenticated(app, client, mocker, domains_mock):
     response = client.post(
-        "/v1/emails/?org=test-org",
+        "/api/users/v1/emails/?org=test-org",
         json={
             'mail': 'test-box@example.com',
             'cn': 'test-box',
@@ -190,7 +190,7 @@ def test_create_email_unauthenticated(app, client, mocker, domains_mock):
 def test_create_email_unauthorized_domain_aliases(app, client, mocker, domains_mock): # noqa 501
     response = client.make_tested_request(
         client,
-        '/v1/emails/?org=test-org',
+        '/api/users/v1/emails/?org=test-org',
         'post',
         {'Authorization': 'Bearer ' + USER_TOKEN},
         {
@@ -207,7 +207,7 @@ def test_create_email_unauthorized_domain_aliases(app, client, mocker, domains_m
 def test_get_emails(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        "/v1/emails/?org=test-org",
+        "/api/users/v1/emails/?org=test-org",
         "get",
         {'Authorization': 'Bearer ' + USER_TOKEN}
     )
@@ -229,7 +229,7 @@ def test_get_emails(app, client, mocker, domains_mock):
 
 def test_get_emails_missing_auth(app, client, mocker, domains_mock):
     response = client.get(
-        "/v1/emails/?org=test-org",
+        "/api/users/v1/emails/?org=test-org",
     )
     assert response.status_code == 401
 
@@ -237,7 +237,7 @@ def test_get_emails_missing_auth(app, client, mocker, domains_mock):
 def test_get_emails_unauthorized(app, client, mocker, domains_mock):
     response = client.make_tested_request(
         client,
-        "/v1/emails/?org=some-org",
+        "/api/users/v1/emails/?org=some-org",
         "get",
         {'Authorization': 'Bearer ' + USER_TOKEN}
     )
@@ -246,14 +246,14 @@ def test_get_emails_unauthorized(app, client, mocker, domains_mock):
 
 def test_get_emails_unauthenticated(app, client, mocker, domains_mock):
     response = client.get(
-        "/v1/emails/?org=test-org",
+        "/api/users/v1/emails/?org=test-org",
     )
     assert response.status_code == 401
 
 
 def test_get_emails_missing_org(app, client, mocker, domains_mock):
     response = client.get(
-        "/v1/emails/",
+        "/api/users/v1/emails/",
         headers={'Authorization': 'Bearer ' + USER_TOKEN}
     )
     assert response.status_code == 400

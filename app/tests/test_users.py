@@ -3,7 +3,7 @@ import ldap
 
 def test_create_user(app, client, mocker):
     response = client.post(
-        '/users/users/',
+        '/api/users/v1/users/users/',
         json={
             'login': 'user1',
             'gn': 'Robert',
@@ -44,16 +44,19 @@ def test_create_user(app, client, mocker):
 
 
 def test_create_user_wrong_input(client):
-    response = client.post('/users/users/')
+    response = client.post('/api/users/v1/users/users/')
     assert response.status_code == 400
 
 
 def test_duplicate_user(app, client, mocker):
-    response = client.post('/users/users/', json={'login': 'user1',
-                                                  'gn': 'Robert',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'baranek'})
+    response = client.post(
+      '/api/users/v1/users/users/',
+      json={
+        'login': 'user1',
+        'gn': 'Robert',
+        'sn': 'Baran',
+        'mail': 'rbaran@example.com',
+        'password': 'baranek'})
 
     assert response.status_code == 201
     mocker.patch.object(
@@ -61,26 +64,32 @@ def test_duplicate_user(app, client, mocker):
         'add_s',
         side_effect=[ldap.ALREADY_EXISTS]
     )
-    response = client.post('/users/users/', json={'login': 'user1',
-                                                  'gn': 'Robert',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'baranek'})
+    response = client.post(
+      '/api/users/v1/users/users/',
+      json={
+        'login': 'user1',
+        'gn': 'Robert',
+        'sn': 'Baran',
+        'mail': 'rbaran@example.com',
+        'password': 'baranek'})
 
     assert response.status_code == 409
 
 
 def test_create_user_get_405(client):
-    response = client.get('/users/users/')
+    response = client.get('/api/users/v1/users/users/')
     assert response.status_code == 405
 
 
 def test_duplicate_user_email(app, client, mocker):
-    response = client.post('/users/users/', json={'login': 'user1',
-                                                  'gn': 'Robert',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'baranek'})
+    response = client.post(
+      '/api/users/v1/users/users/',
+      json={
+        'login': 'user1',
+        'gn': 'Robert',
+        'sn': 'Baran',
+        'mail': 'rbaran@example.com',
+        'password': 'baranek'})
 
     assert response.status_code == 201
     mocker.patch.object(
@@ -88,17 +97,20 @@ def test_duplicate_user_email(app, client, mocker):
         'add_s',
         side_effect=[ldap.ALREADY_EXISTS]
     )
-    response = client.post('/users/users/', json={'login': 'user2',
-                                                  'gn': 'Renata',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'barankowa'})
+    response = client.post(
+      '/api/users/v1/users/users/',
+      json={
+        'login': 'user2',
+        'gn': 'Renata',
+        'sn': 'Baran',
+        'mail': 'rbaran@example.com',
+        'password': 'barankowa'})
 
     assert response.status_code == 409
 
 
 def test_userinfo_noauth(client):
-    response = client.get('/users/userinfo')
+    response = client.get('/api/users/v1/users/userinfo')
     assert response.status_code == 401
 
 
@@ -109,7 +121,7 @@ def test_userinfo_non_existing(app, client, mocker, domains_mock):
         return_value=[]
     )
     response = client.get(
-        '/users/userinfo',
+        '/api/users/v1/users/userinfo',
         headers={'Authorization': 'Bearer user1'}
     )
     assert response.status_code == 404
@@ -152,7 +164,7 @@ def test_userinfo(app, client, mocker, domains_mock):
             ]
         ])
     response = client.get(
-        '/users/userinfo',
+        '/api/users/v1/users/userinfo',
         headers={'Authorization': 'Bearer user1'}
     )
     assert response.status_code == 200
@@ -164,10 +176,13 @@ def test_userinfo(app, client, mocker, domains_mock):
 
 
 def test_create_user_blacklist(app, client):
-    response = client.post('/users/users/', json={'login': 'k8s-admins',
-                                                  'gn': 'Robert',
-                                                  'sn': 'Baran',
-                                                  'mail': 'rbaran@example.com',
-                                                  'password': 'baranek'})
+    response = client.post(
+      '/api/users/v1/users/users/',
+      json={
+        'login': 'k8s-admins',
+        'gn': 'Robert',
+        'sn': 'Baran',
+        'mail': 'rbaran@example.com',
+        'password': 'baranek'})
 
     assert response.status_code == 403
