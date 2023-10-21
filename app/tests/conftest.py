@@ -66,7 +66,7 @@ def make_tested_request(
 def app(mocker):
     mocker.patch('ldap.initialize')
     os.environ['LDAP_BASE'] = 'dc=example,dc=com'
-    os.environ['APIGATEWAY_URL'] = 'http://127.0.0.1:8001'
+    os.environ['DOMAINSSERVICE_ENDPOINT'] = 'http://127.0.0.1:8001'
     os.environ['AUTHSERVICE_ENDPOINT'] = 'http://127.0.0.1:8000'
     app = create_app()
     yield app
@@ -98,15 +98,23 @@ def client(app):
 
 @pytest.fixture
 def domains_mock(app, mocker):
-    response = {
-        'data': {'domain': {'domains': [
-            {'name': 'example.com', 'org': 'test-org'},
-            {'name': 'local.domain', 'org': 'test-org'}
-        ]}},
+    response = [
+      {'name': 'example.com', 'org': 'test-org'},
+      {'name': 'local.domain', 'org': 'test-org'}
+     ]
+    response_userinfo = {
         "claims": {"iss": "https://auth.usersservice-22-dev-authservice-va444e.ci.exphost.pl/dex", "sub": "CgR0ZXN0EgRsZGFw", "aud": "exphost-controller", "exp": 1697202958, "iat": 1697116558, "at_hash": "XDGcSLVlPMa-gGIok8d62A", "email": "test@mail.ru", "email_verified": True, "groups": ["test-org"], "name": "test"}} # workaround for auth_required and mock problem # noqa 501
     mock_response = requests.Response()
     mock_response.status_code = 200
     mock_response._content = json.dumps(response).encode()
+    mocker.patch.object(
+        app.DAODomains.requests,
+        'get',
+        return_value=mock_response
+    )
+    mock_response = requests.Response()
+    mock_response.status_code = 200
+    mock_response._content = json.dumps(response_userinfo).encode()
     mocker.patch.object(
         app.DAODomains.requests,
         'post',

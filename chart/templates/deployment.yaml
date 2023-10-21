@@ -42,8 +42,8 @@ spec:
                   name: {{ .Values.ldap.password.secret }}
                   key: {{ .Values.ldap.password.key }}
 {{- end }}
-            - name: APIGATEWAY_URL
-              value: {{ .Values.endpoints.apigateway }}
+            - name: DOMAINSSERVICE_ENDPOINT
+              value: "https://{{ .Values.global.domain }}"
             - name: AUTHSERVICE_ENDPOINT
               value: "https://{{ .Values.global.domain }}"
           ports:

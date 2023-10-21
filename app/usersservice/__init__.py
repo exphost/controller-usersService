@@ -16,7 +16,7 @@ def create_app(test_config=None):
         LDAP_DN=os.environ.get("LDAP_DN", ""),
         LDAP_PASSWORD=os.environ.get("LDAP_PASSWORD", ""),
         AUTHSERVICE_ENDPOINT=os.environ.get("AUTHSERVICE_ENDPOINT", None),
-        APIGATEWAY_URL=os.environ.get("APIGATEWAY_URL")
+        DOMAINSSERVICE_ENDPOINT=os.environ.get("DOMAINSSERVICE_ENDPOINT")
     )
     if not app.config['AUTHSERVICE_ENDPOINT']:
         raise Exception('AUTHSERVICE_ENDPOINT is not defined')
@@ -28,7 +28,7 @@ def create_app(test_config=None):
     app.logger.info(" LDAP_BASE="+app.config['LDAP_BASE'])
     app.logger.info(" LDAP_DN="+app.config['LDAP_DN'])
     app.logger.info(" LDAP_PASSWORD="+str(bool(app.config['LDAP_PASSWORD'])))
-    app.logger.info("APIGATEWAY_URL="+app.config['APIGATEWAY_URL'])
+    app.logger.info("DOMAINSSERVICE_ENDPOINT="+app.config['DOMAINSSERVICE_ENDPOINT']) # noqa 501
     app.DAO = DAO(app)
     app.DAODomains = DAODomains(app)
     if test_config is None:
