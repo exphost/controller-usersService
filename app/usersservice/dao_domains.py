@@ -8,7 +8,7 @@ class DAODomains:
 
     def get_domains(self, org, token):
         response = self.requests.get(
-            self.api + '/api/domains/v1/domains?org=' + org,
+            self.api + '/api/domains/v1/domains/?org=' + org,
             headers={'Authorization': token}
         )
         return response.json()
